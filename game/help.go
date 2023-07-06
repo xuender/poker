@@ -11,6 +11,7 @@ type Help struct {
 	bus        *Bus
 	background *ebiten.Image
 	helps      [][2]string
+	keys       map[ebiten.Key]func()
 }
 
 // nolint: gomnd
@@ -27,11 +28,14 @@ func NewHelp(bus *Bus) *Help {
 			{"[F2]", "Help"},
 			{"[F11]", "Fullscreen"},
 		},
+		keys: map[ebiten.Key]func(){
+			ebiten.KeyF2: func() {},
+		},
 	}
 }
 
 func (p *Help) Update() error               { return nil }
-func (p *Help) Keys() map[ebiten.Key]func() { return nil }
+func (p *Help) Keys() map[ebiten.Key]func() { return p.keys }
 
 // nolint: gomnd
 func (p *Help) Draw(screen *ebiten.Image) {
