@@ -1,4 +1,4 @@
-package desktop
+package game
 
 import "github.com/xuender/poker/pb"
 

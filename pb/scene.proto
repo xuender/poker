@@ -3,6 +3,7 @@ package pb;
 option go_package = "./pb";
 // Scene TODO: Scene.
 enum Scene {
-	load = 0;
-	show = 1;
+	start = 0;
+	desktop = 1;
+	help = 2;
 }

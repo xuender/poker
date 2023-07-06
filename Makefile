@@ -20,7 +20,8 @@ clean:
 	rm -rf dist
 
 build:
-	go build -o dist/game main.go
+	go build -o dist/poker cmd/poker/main.go
+	GOOS=windows go build -ldflags "-H windowsgui" -o dist/poker.exe cmd/poker/main.go
 
 proto:
 	protoc --go_out=. pb/*.proto
