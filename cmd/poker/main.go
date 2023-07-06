@@ -11,12 +11,13 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/samber/lo"
+	"github.com/xuender/poker/desktop"
 	"github.com/xuender/poker/pb"
 )
 
 const (
-	screenWidth  = 800
-	screenHeight = 600
+	screenWidth  = 1024
+	screenHeight = 768
 )
 
 type Poker struct {
@@ -25,6 +26,10 @@ type Poker struct {
 	scene       pb.Scene
 	sceneUpdate []func() error
 	sceneDraw   []func(*ebiten.Image)
+	backs       *desktop.List
+	my          *desktop.List
+	out         *desktop.List
+	do          bool
 }
 
 func NewPoker() *Poker {
@@ -35,7 +40,7 @@ func NewPoker() *Poker {
 
 	poker.sceneUpdate = []func() error{
 		nilFunc,
-		nilFunc,
+		poker.update,
 	}
 	poker.sceneDraw = []func(*ebiten.Image){
 		poker.loadDraw,
@@ -65,24 +70,79 @@ func (p *Poker) showPoker(screen *ebiten.Image, poker pb.Poker, x, y float64) {
 }
 
 func (p *Poker) showDraw(screen *ebiten.Image) {
-	// p.showPoker(screen, pb.Poker_heartA, 0, 0)
-	// nolint: gomnd
-	for i := 0; i < len(pb.Poker_name); i++ {
-		x := i % 13 * 56
-		y := i / 13 * 80
+	// ebitenutil.DebugPrintAt(screen, strconv.Itoa(len(p.backs)), 400, 250)
+	for _, img := range p.backs.Images() {
+		p.showPoker(screen, img.Poker, img.X, img.Y)
+	}
 
-		p.showPoker(screen, pb.Poker(i), float64(x), float64(y))
+	for _, img := range p.out.Images() {
+		p.showPoker(screen, img.Poker, img.X, img.Y)
+	}
+
+	for _, img := range p.my.Images() {
+		p.showPoker(screen, img.Poker, img.X, img.Y)
 	}
 }
 
+func (p *Poker) update() error {
+	if !ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		p.do = false
+
+		return nil
+	}
+
+	if p.do {
+		return nil
+	}
+
+	pox, poy := ebiten.CursorPosition()
+
+	if poker := p.backs.Click(pox, poy); poker != pb.Poker_back {
+		p.my.Add(poker)
+	}
+
+	if poker := p.my.Click(pox, poy); poker != pb.Poker_back {
+		p.out.Add(poker)
+	}
+
+	if poker := p.out.Click(pox, poy); poker != pb.Poker_back {
+		p.my.Add(poker)
+	}
+
+	// if len(p.backs) > 0 && x > 300 && x < 400+len(p.backs) && y > 200 && y < 300 {
+	// 	p.my = append(p.my, p.backs[0])
+	// 	p.backs = p.backs[1:]
+	// }
+
+	// if len(p.my) > 0 {
+	// }
+
+	p.do = true
+
+	return nil
+}
+
+// nolint: gomnd
 func (p *Poker) init() {
 	for key := range pb.Poker_name {
 		poker := pb.Poker(key)
-		img, _ := lo.Must2(image.Decode(bytes.NewReader(poker.Image())))
+		img, _ := lo.Must2(image.Decode(bytes.NewReader(poker.Bytes())))
 
 		p.images[poker] = ebiten.NewImageFromImage(img)
 	}
 
+	pokers := make([]pb.Poker, 54)
+
+	for i := 1; i <= 54; i++ {
+		pokers[i-1] = pb.Poker(i)
+	}
+
+	pokers = lo.Shuffle(pokers)
+
+	p.backs = desktop.NewList(100, 60, p.images[0].Bounds(), pokers...)
+	p.backs.Back = true
+	p.my = desktop.NewList(20, 400, p.images[0].Bounds())
+	p.out = desktop.NewList(20, 230, p.images[0].Bounds())
 	p.scene = pb.Scene_show
 }
 

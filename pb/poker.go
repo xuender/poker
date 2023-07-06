@@ -17,10 +17,10 @@ var (
 // nolint: gochecknoinits
 func init() {
 	for key := range Poker_name {
-		_data[key] = lo.Must1(_pokers.ReadFile(fmt.Sprintf("pokers/%d.jpg", key)))
+		_data[key] = lo.Must1(_pokers.ReadFile(fmt.Sprintf("pokers/%d.png", key)))
 	}
 }
 
-func (p Poker) Image() []byte {
+func (p Poker) Bytes() []byte {
 	return _data[p]
 }

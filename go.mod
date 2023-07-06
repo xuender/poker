@@ -7,6 +7,7 @@ go 1.18
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.5.5
 	github.com/samber/lo v1.38.1
+	github.com/xuender/kit v1.0.17
 	google.golang.org/protobuf v1.31.0
 )
 
