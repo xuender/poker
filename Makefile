@@ -24,6 +24,7 @@ clean:
 build:
 	go build -o dist/poker cmd/poker/main.go
 	GOOS=windows go build -ldflags "-H windowsgui" -o dist/poker.exe cmd/poker/main.go
+	# GOOS=darwin GOARCH=amd64 go build -o dist/poker-mac cmd/poker/main.go
 
 proto:
 	protoc --go_out=. pb/*.proto

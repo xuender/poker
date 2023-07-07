@@ -5,6 +5,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text"
+	"github.com/xuender/poker/fonts"
 	"github.com/xuender/poker/pb"
 	"golang.org/x/image/font"
 )
@@ -20,8 +21,8 @@ type StartScene struct {
 	keys map[ebiten.Key]func()
 }
 
-func NewStart(bus *Bus, fonts *Fonts) *StartScene {
-	start := &StartScene{bus: bus, face: fonts.MonospaceFace(_fontSize)}
+func NewStart(bus *Bus) *StartScene {
+	start := &StartScene{bus: bus, face: fonts.Head(_fontSize)}
 	start.keys = map[ebiten.Key]func(){
 		ebiten.KeyEscape: func() { bus.To(pb.Scene_desktop) },
 	}
@@ -33,7 +34,7 @@ func (p *StartScene) Update() error               { return nil }
 func (p *StartScene) Keys() map[ebiten.Key]func() { return p.keys }
 
 func (p *StartScene) Draw(screen *ebiten.Image) {
-	txt := "[ESC] run..."
+	txt := "[ESC] 运行..."
 	width, height := p.bus.Layout()
 	left := (width - len(txt)*_fontSize/_two) / _two
 	top := height/_two - _fontSize/_two

@@ -12,7 +12,6 @@ func InitPoker() *game.Poker {
 	wire.Build(
 		game.NewPoker,
 		game.NewBus,
-		game.NewFonts,
 		game.NewDesktop,
 		game.NewHelp,
 		game.NewStart,
