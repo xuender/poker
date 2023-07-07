@@ -1,3 +1,5 @@
+PACKAGE = github.com/xuender/poker
+
 default: lint test
 
 tools:
@@ -25,3 +27,5 @@ build:
 
 proto:
 	protoc --go_out=. pb/*.proto
+wire:
+	wire gen ${PACKAGE}/cmd

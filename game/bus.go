@@ -1,7 +1,6 @@
 package game
 
 import (
-	"image"
 	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -9,20 +8,20 @@ import (
 )
 
 const (
-	screenWidth  = 1024
-	screenHeight = 768
+	_screenWidth  = 1024
+	_screenHeight = 768
 )
 
 type Bus struct {
 	scenes []pb.Scene
-	Screen image.Point
 	keys   map[ebiten.Key]func()
 }
 
 func NewBus() *Bus {
+	ebiten.SetWindowSize(_screenWidth, _screenHeight)
+
 	bus := &Bus{
 		scenes: []pb.Scene{pb.Scene_start},
-		Screen: image.Point{X: screenWidth, Y: screenHeight},
 		keys:   map[ebiten.Key]func(){},
 	}
 
@@ -31,6 +30,10 @@ func NewBus() *Bus {
 	bus.keys[ebiten.KeyF11] = func() { ebiten.SetFullscreen(!ebiten.IsFullscreen()) }
 
 	return bus
+}
+
+func (p *Bus) Layout() (int, int) {
+	return _screenWidth, _screenHeight
 }
 
 func (p *Bus) Keys() map[ebiten.Key]func() {

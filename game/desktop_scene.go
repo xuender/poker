@@ -9,7 +9,7 @@ import (
 	"github.com/xuender/poker/pb"
 )
 
-type Desktop struct {
+type DesktopScene struct {
 	bus    *Bus
 	images []*ebiten.Image
 	backs  *List
@@ -18,22 +18,22 @@ type Desktop struct {
 	do     bool
 }
 
-func NewDesktop(bus *Bus) *Desktop {
-	ret := &Desktop{bus: bus}
+func NewDesktop(bus *Bus) *DesktopScene {
+	ret := &DesktopScene{bus: bus}
 	ret.images = make([]*ebiten.Image, len(pb.Poker_name))
 	ret.init()
 
 	return ret
 }
 
-func (p *Desktop) showPoker(screen *ebiten.Image, poker pb.Poker, x, y float64) {
+func (p *DesktopScene) showPoker(screen *ebiten.Image, poker pb.Poker, x, y float64) {
 	op := &ebiten.DrawImageOptions{}
 
 	op.GeoM.Translate(x, y)
 	screen.DrawImage(p.images[poker], op)
 }
 
-func (p *Desktop) Draw(screen *ebiten.Image) {
+func (p *DesktopScene) Draw(screen *ebiten.Image) {
 	// ebitenutil.DebugPrintAt(screen, strconv.Itoa(len(p.backs)), 400, 250)
 	for _, img := range p.backs.Images() {
 		p.showPoker(screen, img.Poker, img.X, img.Y)
@@ -48,8 +48,8 @@ func (p *Desktop) Draw(screen *ebiten.Image) {
 	}
 }
 
-func (p *Desktop) Keys() map[ebiten.Key]func() { return nil }
-func (p *Desktop) Update() error {
+func (p *DesktopScene) Keys() map[ebiten.Key]func() { return nil }
+func (p *DesktopScene) Update() error {
 	if !ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		p.do = false
 
@@ -86,7 +86,7 @@ func (p *Desktop) Update() error {
 }
 
 // nolint: gomnd
-func (p *Desktop) init() {
+func (p *DesktopScene) init() {
 	for key := range pb.Poker_name {
 		poker := pb.Poker(key)
 		img, _ := lo.Must2(image.Decode(bytes.NewReader(poker.Bytes())))
@@ -102,8 +102,8 @@ func (p *Desktop) init() {
 
 	pokers = lo.Shuffle(pokers)
 
-	p.backs = NewList(100, 60, p.images[0].Bounds(), pokers...)
+	p.backs = NewList(100, 60, p.images[0].Bounds().Dx(), p.images[0].Bounds().Dy(), pokers...)
 	p.backs.Back = true
-	p.my = NewList(20, 400, p.images[0].Bounds())
-	p.out = NewList(20, 230, p.images[0].Bounds())
+	p.my = NewList(20, 400, p.images[0].Bounds().Dx(), p.images[0].Bounds().Dy())
+	p.out = NewList(20, 230, p.images[0].Bounds().Dx(), p.images[0].Bounds().Dy())
 }

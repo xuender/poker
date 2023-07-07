@@ -6,13 +6,13 @@ import (
 	"github.com/xuender/poker/pb"
 )
 
-type Start struct {
+type StartScene struct {
 	bus  *Bus
 	keys map[ebiten.Key]func()
 }
 
-func NewStart(bus *Bus) *Start {
-	start := &Start{bus: bus}
+func NewStart(bus *Bus) *StartScene {
+	start := &StartScene{bus: bus}
 	start.keys = map[ebiten.Key]func(){
 		ebiten.KeyEscape: func() { bus.To(pb.Scene_desktop) },
 	}
@@ -20,9 +20,9 @@ func NewStart(bus *Bus) *Start {
 	return start
 }
 
-func (p *Start) Update() error               { return nil }
-func (p *Start) Keys() map[ebiten.Key]func() { return p.keys }
+func (p *StartScene) Update() error               { return nil }
+func (p *StartScene) Keys() map[ebiten.Key]func() { return p.keys }
 
-func (p *Start) Draw(screen *ebiten.Image) {
+func (p *StartScene) Draw(screen *ebiten.Image) {
 	ebitenutil.DebugPrint(screen, "[ESC] run...")
 }
