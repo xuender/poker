@@ -9,6 +9,10 @@ import (
 	"golang.org/x/image/font"
 )
 
+const (
+	_border = 100
+)
+
 type HelpScene struct {
 	bus   *Bus
 	helps [][2]string
@@ -36,18 +40,22 @@ func NewHelp(bus *Bus, fonts *Fonts) *HelpScene {
 func (p *HelpScene) Update() error               { return nil }
 func (p *HelpScene) Keys() map[ebiten.Key]func() { return p.keys }
 
-// nolint: gomnd
 func (p *HelpScene) Draw(screen *ebiten.Image) {
 	width, height := p.bus.Layout()
+	width -= _border
+	width -= _border
+	height -= _border
+	height -= _border
+
 	col := color.RGBA{0xdf, 0xd0, 0x00, 0xff}
 
 	vector.DrawFilledRect(
 		screen,
-		100, 100,
-		float32(width-200), float32(height-200),
+		_border, _border,
+		float32(width), float32(height),
 		color.RGBA{0xf, 0x60, 0x60, 0xdf},
 		false)
-
+	// nolint: gomnd
 	for index, help := range p.helps {
 		text.Draw(screen, help[0], p.face, 150, 150+30*index, col)
 		text.Draw(screen, help[1], p.face, 300, 150+30*index, col)
