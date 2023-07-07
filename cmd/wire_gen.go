@@ -14,10 +14,10 @@ import (
 
 func InitPoker() *game.Poker {
 	bus := game.NewBus()
-	start := game.NewStart(bus)
-	desktop := game.NewDesktop(bus)
 	fonts := game.NewFonts()
-	help := game.NewHelp(bus, fonts)
-	poker := game.NewPoker(bus, start, desktop, help)
+	startScene := game.NewStart(bus, fonts)
+	desktopScene := game.NewDesktop(bus)
+	helpScene := game.NewHelp(bus, fonts)
+	poker := game.NewPoker(bus, startScene, desktopScene, helpScene)
 	return poker
 }

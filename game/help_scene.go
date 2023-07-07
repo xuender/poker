@@ -45,7 +45,7 @@ func (p *HelpScene) Draw(screen *ebiten.Image) {
 		screen,
 		100, 100,
 		float32(width-200), float32(height-200),
-		color.RGBA{0xf, 0x60, 0x60, 0x9f},
+		color.RGBA{0xf, 0x60, 0x60, 0xdf},
 		false)
 
 	for index, help := range p.helps {
