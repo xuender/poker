@@ -1,0 +1,7 @@
+syntax = "proto3";
+package pb;
+option go_package = "./pb";
+// MsgType TODO: MsgType.
+enum MsgType {
+	ping = 0;
+}

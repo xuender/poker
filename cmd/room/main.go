@@ -13,6 +13,10 @@ func (p *demo) Read(msg *pb.Msg) {
 }
 
 func main() {
-	server := udps.NewServer(&demo{})
+	room := &demo{}
+	client := udps.NewClient(room)
+	client.Run()
+
+	server := udps.NewServer(room)
 	server.Run()
 }

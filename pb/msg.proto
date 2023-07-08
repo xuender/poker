@@ -1,9 +1,12 @@
 syntax = "proto3";
 package pb;
 option go_package = "./pb";
+import "pb/msg_type.proto";
+
 // Msg 消息.
 message Msg {
 	int64 client = 1;
 	string nick = 2;
 	repeated string users = 3;
+	MsgType type = 4;
 }

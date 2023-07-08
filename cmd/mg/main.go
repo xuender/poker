@@ -4,10 +4,11 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strconv"
 
+	"github.com/xuender/kit/base"
+	"github.com/xuender/kit/logs"
 	"github.com/xuender/poker/cmd/mg/mg"
 )
 
@@ -20,16 +21,24 @@ type dimensions struct {
 
 func main() {
 	args := os.Args[1:]
+
 	dim, err := parseArgs(args)
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println(usage)
+		logs.E.Println(err)
+		logs.I.Println(usage)
 		os.Exit(1)
 	}
+
 	maze := mg.NewMaze(dim.width, dim.height)
 	maze.Generate()
 	maze.Print()
 }
+
+var (
+	ErrWidth  = errors.New("width must be an integer")
+	ErrHeight = errors.New("height must be an integer")
+	ErrArg    = errors.New("2 arguments required")
+)
 
 func parseArgs(args []string) (dimensions, error) {
 	var (
@@ -37,16 +46,19 @@ func parseArgs(args []string) (dimensions, error) {
 		err error
 	)
 
-	if len(args) < 2 {
-		return dim, errors.New("2 arguments required")
+	if len(args) < base.Two {
+		return dim, ErrArg
 	}
+
 	dim.width, err = strconv.Atoi(args[0])
 	if err != nil {
-		return dim, errors.New("Width must be an integer")
+		return dim, ErrWidth
 	}
+
 	dim.height, err = strconv.Atoi(args[1])
 	if err != nil {
-		return dim, errors.New("Height must be an integer")
+		return dim, ErrHeight
 	}
+
 	return dim, nil
 }

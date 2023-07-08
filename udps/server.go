@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/samber/lo"
+	"github.com/xuender/kit/base"
+	"github.com/xuender/kit/cache"
 	"github.com/xuender/kit/logs"
 	"github.com/xuender/poker/pb"
 	"google.golang.org/protobuf/proto"
@@ -15,20 +17,20 @@ import (
 const _port = 3880
 
 type Server struct {
-	users      map[int64]*User
-	nick       string
-	conn       *net.UDPConn
-	serverAddr *net.UDPAddr
-	id         int64
-	reader     Reader
+	users  *cache.Cache[int64, *User]
+	nick   string
+	conn   *net.UDPConn
+	id     int64
+	reader Reader
 }
 
+// nolint: gosec
 func NewServer(reader Reader) *Server {
 	rand.Seed(time.Now().UnixNano())
 
 	user := lo.Must1(user.Current())
 	ret := &Server{
-		users:  map[int64]*User{},
+		users:  cache.New[int64, *User](time.Second*base.Two, time.Second),
 		nick:   user.Username,
 		reader: reader,
 		id:     rand.Int63(),
@@ -37,30 +39,19 @@ func NewServer(reader Reader) *Server {
 	return ret
 }
 
-func (p *Server) Run() {
-	p.client()
-}
-
 func (p *Server) SendByID(msg *pb.Msg, client int64) {
 	msg.Client = client
 	data := lo.Must1(proto.Marshal(msg))
 
-	if p.serverAddr == nil {
-		for id, user := range p.users {
-			_, err := p.conn.WriteToUDP(data, user.addr)
-			if err != nil {
-				delete(p.users, id)
-				p.Send(msg)
-			}
-		}
-	} else {
-		_, err := p.conn.WriteToUDP(data, p.serverAddr)
+	_ = p.users.Iterate(func(key int64, user *User) error {
+		_, err := p.conn.WriteToUDP(data, user.addr)
 		if err != nil {
-			logs.E.Println(err)
-
-			return
+			p.users.Delete(key)
+			p.Send(msg)
 		}
-	}
+
+		return nil
+	})
 }
 
 func (p *Server) Send(msg *pb.Msg) {
@@ -68,57 +59,12 @@ func (p *Server) Send(msg *pb.Msg) {
 	p.SendByID(msg, p.id)
 }
 
-func (p *Server) read(data []byte) {
-	msg := &pb.Msg{}
-
-	lo.Must0(proto.Unmarshal(data, msg))
-	p.reader.Read(msg)
-}
-
 func (p *Server) AddAddr(client int64, user *User) {
-	p.users[client] = user
+	p.users.Set(client, user)
 	logs.D.Printf("client: %d: %v", client, user)
 }
 
-func (p *Server) client() {
-	conn, err := net.DialUDP("udp", nil, &net.UDPAddr{
-		IP:   net.IPv4(0, 0, 0, 0),
-		Port: _port,
-	})
-	if err != nil {
-		logs.E.Println("err:", err)
-
-		return
-	}
-	defer conn.Close()
-
-	msg := &pb.Msg{Nick: p.nick + "_c", Client: p.id}
-	sendData, _ := proto.Marshal(msg)
-
-	_, err = conn.Write(sendData)
-	if err != nil {
-		logs.E.Println("发送数据失败", err)
-		return
-	}
-
-	p.conn = conn
-	data := make([]byte, 4096)
-
-	for {
-		udp, addr, err := conn.ReadFromUDP(data)
-		if err != nil {
-			logs.W.Println("接受数据失败", err)
-			p.server()
-
-			return
-		}
-
-		p.serverAddr = addr
-		p.read(data[:udp])
-	}
-}
-
-func (p *Server) server() {
+func (p *Server) Run() {
 	conn := lo.Must1(net.ListenUDP("udp", &net.UDPAddr{
 		IP:   net.IPv4(0, 0, 0, 0),
 		Port: _port,
@@ -135,12 +81,18 @@ func (p *Server) server() {
 		lo.Must0(proto.Unmarshal(bf[:size], msg))
 		logs.D.Printf("data:%v, addr:%v", msg, addr)
 
-		p.AddAddr(msg.Client, &User{nick: msg.Nick, addr: addr})
+		if msg.Type == pb.MsgType_ping {
+			p.AddAddr(msg.Client, &User{nick: msg.Nick, addr: addr})
 
-		nicks := make([]string, 0, len(p.users)+1)
-		for _, user := range p.users {
-			nicks = append(nicks, user.nick)
+			continue
 		}
+
+		nicks := make([]string, 0, p.users.Len()+1)
+		_ = p.users.Iterate(func(_ int64, user *User) error {
+			nicks = append(nicks, user.nick)
+
+			return nil
+		})
 
 		nicks = append(nicks, p.nick)
 
