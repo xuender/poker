@@ -1,4 +1,4 @@
-package udps
+package nets
 
 import "github.com/xuender/poker/pb"
 

@@ -14,9 +14,10 @@ import (
 
 func InitPoker() *game.Poker {
 	bus := game.NewBus()
+	script := game.NewScript(bus)
 	startScene := game.NewStart(bus)
-	desktopScene := game.NewDesktop(bus)
+	desktopScene := game.NewDesktop(bus, script)
 	helpScene := game.NewHelp(bus)
-	poker := game.NewPoker(bus, startScene, desktopScene, helpScene)
+	poker := game.NewPoker(bus, script, startScene, desktopScene, helpScene)
 	return poker
 }

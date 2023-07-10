@@ -15,6 +15,7 @@ func InitPoker() *game.Poker {
 		game.NewDesktop,
 		game.NewHelp,
 		game.NewStart,
+		game.NewScript,
 	)
 
 	return &game.Poker{}

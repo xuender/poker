@@ -6,7 +6,6 @@ import (
 )
 
 type List struct {
-	pokers []pb.Poker
 	left   int
 	top    int
 	width  int
@@ -14,16 +13,12 @@ type List struct {
 	Back   bool
 }
 
-func NewList(left, top, width, height int, pokers ...pb.Poker) *List {
-	return &List{pokers: pokers, left: left, top: top, width: width, height: height}
+func NewList(left, top, width, height int) *List {
+	return &List{left: left, top: top, width: width, height: height}
 }
 
-func (p *List) Add(poker pb.Poker) {
-	p.pokers = append(p.pokers, poker)
-}
-
-func (p *List) Click(pox, poy int) pb.Poker {
-	if p.clickOut(pox, poy) {
+func (p *List) Click(pox, poy int, pokers []pb.Poker) pb.Poker {
+	if p.clickOut(pox, poy, pokers) {
 		return pb.Poker_back
 	}
 
@@ -32,26 +27,26 @@ func (p *List) Click(pox, poy int) pb.Poker {
 	pox -= p.left
 
 	if p.Back {
-		ret := p.pokers[0]
-		p.pokers = p.pokers[1:]
+		ret := pokers[0]
+		pokers = pokers[1:]
 
 		return ret
 	}
 
 	pox /= 30
 
-	if pox >= len(p.pokers) {
-		pox = len(p.pokers) - 1
+	if pox >= len(pokers) {
+		pox = len(pokers) - 1
 	}
 
-	ret := p.pokers[pox]
-	p.pokers = append(p.pokers[:pox], p.pokers[pox+1:]...)
+	ret := pokers[pox]
+	pokers = append(pokers[:pox], pokers[pox+1:]...)
 
 	return ret
 }
 
-func (p *List) clickOut(pox int, poy int) bool {
-	if len(p.pokers) == 0 {
+func (p *List) clickOut(pox int, poy int, pokers []pb.Poker) bool {
+	if len(pokers) == 0 {
 		return true
 	}
 
@@ -67,16 +62,16 @@ func (p *List) clickOut(pox int, poy int) bool {
 		return true
 	}
 
-	if pox > p.left+p.width+len(p.pokers)*30 {
+	if pox > p.left+p.width+len(pokers)*30 {
 		return true
 	}
 
 	if p.Back {
-		if p.left > p.left+p.width+len(p.pokers) {
+		if p.left > p.left+p.width+len(pokers) {
 			return true
 		}
 	} else {
-		if p.left > p.left+p.width+len(p.pokers)*30 {
+		if p.left > p.left+p.width+len(pokers)*30 {
 			return true
 		}
 	}
@@ -84,10 +79,10 @@ func (p *List) clickOut(pox int, poy int) bool {
 	return false
 }
 
-func (p *List) Images() []*Image {
-	images := make([]*Image, len(p.pokers))
+func (p *List) Images(pokers []pb.Poker) []*Image {
+	images := make([]*Image, len(pokers))
 
-	for index, poker := range p.pokers {
+	for index, poker := range pokers {
 		img := &Image{Y: float64(p.top)}
 		images[index] = img
 

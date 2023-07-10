@@ -2,11 +2,15 @@ syntax = "proto3";
 package pb;
 option go_package = "./pb";
 import "pb/msg_type.proto";
+import "pb/poker.proto";
 
 // Msg 消息.
 message Msg {
-	int64 client = 1;
+	uint32 conv = 1;
 	string nick = 2;
 	repeated string users = 3;
 	MsgType type = 4;
+	repeated Poker backs = 5;
+	Poker take = 6;
+	string info = 7;
 }

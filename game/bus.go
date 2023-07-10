@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/xuender/poker/nets"
 	"github.com/xuender/poker/pb"
 )
 
@@ -15,6 +16,11 @@ const (
 type Bus struct {
 	scenes []pb.Scene
 	keys   map[ebiten.Key]func()
+	reader nets.Reader
+	Start  []string
+	Backs  []pb.Poker
+	My     []pb.Poker
+	Your   []pb.Poker
 }
 
 func NewBus() *Bus {
@@ -23,6 +29,8 @@ func NewBus() *Bus {
 	bus := &Bus{
 		scenes: []pb.Scene{pb.Scene_start},
 		keys:   map[ebiten.Key]func(){},
+		Start:  []string{},
+		Backs:  []pb.Poker{},
 	}
 
 	bus.keys[ebiten.KeyEscape] = bus.Close
@@ -30,6 +38,16 @@ func NewBus() *Bus {
 	bus.keys[ebiten.KeyF11] = func() { ebiten.SetFullscreen(!ebiten.IsFullscreen()) }
 
 	return bus
+}
+
+func (p *Bus) SetReader(reader nets.Reader) {
+	p.reader = reader
+}
+
+func (p *Bus) Read(msg *pb.Msg) {
+	if p.reader != nil {
+		p.reader.Read(msg)
+	}
 }
 
 func (p *Bus) Layout() (int, int) {

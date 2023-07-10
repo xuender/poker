@@ -14,12 +14,14 @@ type DesktopScene struct {
 	images []*ebiten.Image
 	backs  *List
 	my     *List
+	your   *List
 	out    *List
 	do     bool
+	script *Script
 }
 
-func NewDesktop(bus *Bus) *DesktopScene {
-	ret := &DesktopScene{bus: bus}
+func NewDesktop(bus *Bus, script *Script) *DesktopScene {
+	ret := &DesktopScene{bus: bus, script: script}
 	ret.images = make([]*ebiten.Image, len(pb.Poker_name))
 	ret.init()
 
@@ -35,15 +37,17 @@ func (p *DesktopScene) showPoker(screen *ebiten.Image, poker pb.Poker, x, y floa
 
 func (p *DesktopScene) Draw(screen *ebiten.Image) {
 	// ebitenutil.DebugPrintAt(screen, strconv.Itoa(len(p.backs)), 400, 250)
-	for _, img := range p.backs.Images() {
+	for _, img := range p.backs.Images(p.bus.Backs) {
 		p.showPoker(screen, img.Poker, img.X, img.Y)
 	}
 
-	for _, img := range p.out.Images() {
+	for _, img := range p.out.Images(p.bus.My) {
 		p.showPoker(screen, img.Poker, img.X, img.Y)
 	}
-
-	for _, img := range p.my.Images() {
+	// for _, img := range p.my.Images() {
+	// 	p.showPoker(screen, img.Poker, img.X, img.Y)
+	// }
+	for _, img := range p.out.Images(p.bus.Your) {
 		p.showPoker(screen, img.Poker, img.X, img.Y)
 	}
 }
@@ -64,23 +68,23 @@ func (p *DesktopScene) Update() error {
 
 	pox, poy := ebiten.CursorPosition()
 
-	if poker := p.backs.Click(pox, poy); poker != pb.Poker_back {
-		p.my.Add(poker)
+	if poker := p.backs.Click(pox, poy, p.bus.Backs); poker != pb.Poker_back {
+		p.script.Take(poker)
 
 		return nil
 	}
 
-	if poker := p.my.Click(pox, poy); poker != pb.Poker_back {
-		p.out.Add(poker)
+	// if poker := p.my.Click(pox, poy); poker != pb.Poker_back {
+	// 	p.out.Add(poker)
 
-		return nil
-	}
+	// 	return nil
+	// }
 
-	if poker := p.out.Click(pox, poy); poker != pb.Poker_back {
-		p.my.Add(poker)
+	// if poker := p.out.Click(pox, poy); poker != pb.Poker_back {
+	// 	p.my.Add(poker)
 
-		return nil
-	}
+	// 	return nil
+	// }
 
 	return nil
 }
@@ -94,16 +98,9 @@ func (p *DesktopScene) init() {
 		p.images[poker] = ebiten.NewImageFromImage(img)
 	}
 
-	pokers := make([]pb.Poker, 54)
-
-	for i := 1; i <= 54; i++ {
-		pokers[i-1] = pb.Poker(i)
-	}
-
-	pokers = lo.Shuffle(pokers)
-
-	p.backs = NewList(100, 60, p.images[0].Bounds().Dx(), p.images[0].Bounds().Dy(), pokers...)
+	p.backs = NewList(100, 60, p.images[0].Bounds().Dx(), p.images[0].Bounds().Dy())
 	p.backs.Back = true
 	p.my = NewList(20, 400, p.images[0].Bounds().Dx(), p.images[0].Bounds().Dy())
+	p.your = NewList(20, 100, p.images[0].Bounds().Dx(), p.images[0].Bounds().Dy())
 	p.out = NewList(20, 230, p.images[0].Bounds().Dx(), p.images[0].Bounds().Dy())
 }

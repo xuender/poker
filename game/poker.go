@@ -9,12 +9,14 @@ import (
 
 type Poker struct {
 	Bus    *Bus
+	script *Script
 	scenes []Scene
 }
 
-func NewPoker(bus *Bus, start *StartScene, desktop *DesktopScene, help *HelpScene) *Poker {
+func NewPoker(bus *Bus, script *Script, start *StartScene, desktop *DesktopScene, help *HelpScene) *Poker {
 	return &Poker{
 		Bus:    bus,
+		script: script,
 		scenes: []Scene{start, desktop, help},
 	}
 }

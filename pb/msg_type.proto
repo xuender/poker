@@ -4,4 +4,7 @@ option go_package = "./pb";
 // MsgType TODO: MsgType.
 enum MsgType {
 	ping = 0;
+	run = 1;
+	reset = 2;
+	take = 3;
 }
